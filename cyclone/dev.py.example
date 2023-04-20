@@ -1,0 +1,33 @@
+DEBUG = True
+
+SECRET_KEY = 'some-secret-key'
+
+# Database
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '',
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': 'localhost',
+        'PORT': 5432,
+    },
+}
+
+ALLOWED_HOSTS = []
+
+CORS_ALLOWED_ORIGINS = []
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
+# python -m celery -A cyclone worker --pool=solo -l INFO (start celery server for windows)
+# python -m celery -A cyclone worker -l INFO (start celery server for ubuntu)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER =
+EMAIL_HOST_PASSWORD =

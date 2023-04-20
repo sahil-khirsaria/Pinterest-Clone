@@ -1,0 +1,15 @@
+DEBUG = False
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '',
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': 'localhost',
+        'PORT': 5432,
+    },
+}
+
+ALLOWED_HOSTS = []
+STATIC_URL = '/assets/'

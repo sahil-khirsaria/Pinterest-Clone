@@ -1,0 +1,14 @@
+{% extends 'emails/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5 mb-5 p-5">
+    <div class="tab-pane" id="security">
+        <h6>Email Verification</h6>
+        <hr>
+        <p>Welcome to the Pinterest</p>
+        <p>You are registered your mail on Pinterest.</p>
+        <p>Verify Your email..!</p>
+        <a href="http://{{ domain }}{% url 'users:user_email_verification' uid=uid token=token %}"><input class="btn btn-danger mt-2" type="submit" value="Verify Email"></a>
+    </div>
+</div>
+{% endblock %}

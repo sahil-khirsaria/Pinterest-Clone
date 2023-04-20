@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Upload Pin{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5 p-5">
+    <div class="tab-pane active" id="profile">
+        <h6>CREATE PIN</h6>
+        <hr>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.as_p }}
+            </div>
+            <input type="submit" value="Create" class="btn btn-primary form-control">
+        </form>
+    </div>
+</div>
+{% endblock %}
