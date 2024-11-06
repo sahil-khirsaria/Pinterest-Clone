@@ -94,3 +94,21 @@ class Board(BaseModel):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.name = self.name.title()
         return super(Board, self).save(force_insert=False, force_update=False, using=None, update_fields=None)
+
+
+class PinComment(BaseModel):
+    user = models.ForeignKey(verbose_name=_('User'), to=User, on_delete=models.CASCADE, related_name='comments')
+    pin = models.ForeignKey(verbose_name=_('Pin'), to=Pin, on_delete=models.CASCADE, related_name='comments')
+    comment = models.TextField(verbose_name=_('Comment'))
+    parent_comment = models.ForeignKey(
+        verbose_name=_('Parent Comment'), to='self', on_delete=models.CASCADE, related_name='replies', null=True,
+        blank=True
+    )
+    is_active = models.BooleanField(verbose_name=_('Is Active'), default=True)
+
+    class Meta:
+        verbose_name = 'Comment'
+        verbose_name_plural = 'Comments'
+
+    def __str__(self):
+        return f'{self.pin.title} - {self.user.username} - {self.comment}'

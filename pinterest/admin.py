@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from pinterest.models import Category, Pin, SavedPin, Board
+from pinterest.models import Category, Pin, SavedPin, Board, PinComment
 
 
 @admin.register(Category)
@@ -20,4 +20,9 @@ class SavedPinModelAdmin(admin.ModelAdmin):
 
 @admin.register(Board)
 class BoardModelAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(PinComment)
+class PinCommentModelAdmin(admin.ModelAdmin):
     pass

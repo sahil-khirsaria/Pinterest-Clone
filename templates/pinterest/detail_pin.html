@@ -3,75 +3,111 @@
 {% block title %}Pinterest | Pin Details{% endblock %}
 {% block content %}
 <section class="pt-5 pb-5">
-<div class="container">
-	<div class="row justify-content-center">
-		<div class="col-md-7">
-			<article class="card">
-			<img class="card-img-top mb-2" src="{{ pin_obj.pin_file.url }}" alt="Card image">
-			<div class="card-body">
-				<h1 class="card-title display-4">{{ pin_obj.title }}</h1>
-				<h5>{{ pin_obj.about }}</h5>
-				<ul>
-					<li>{{ pin_obj.alter_text }}</li>
-				</ul>
-				{% if pin_obj.user.user_profile.website %}
-				<small class="d-block"><a class="btn btn-sm btn-gray200" href="{{ pin_obj.user.user_profile.website }}"><i class="fa fa-external-link"></i>Visit Website</a></small>
-				{% endif %}
-				<!-- Begin Comments -replace demowebsite with your own id
-                ================================================== -->
-				<div id="comments" class="mt-4">
-					<div id="disqus_thread">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-md-7">
+				<article class="card">
+					<img class="card-img-top mb-2" src="{{ pin_obj.pin_file.url }}" alt="Card image">
+					<div class="card-body">
+						<h1 class="card-title display-4">{{ pin_obj.title }}</h1>
+						<h5>{{ pin_obj.about }}</h5>
+						<ul>
+							<li>{{ pin_obj.alter_text }}</li>
+						</ul>
+						{% if pin_obj.user.user_profile.website %}
+						<small class="d-block"><a class="btn btn-sm btn-gray200"
+								href="{{ pin_obj.user.user_profile.website }}"><i class="fa fa-external-link"></i>Visit
+								Website</a></small>
+						{% endif %}
+						<hr>
+						<h5>Comments</h5>
+						<div class="container mt-3">
+							<div class="d-flex justify-content-center row">
+								<div class="col-md">
+									<div class="d-flex flex-column comment-section">
+										<div class="bg-white p-2">
+											<div class="d-flex flex-row user-info"><img class="rounded-circle"
+													src="https://i.imgur.com/RpzrMR2.jpg" width="40">
+												<div class="d-flex flex-column justify-content-start ml-2"><span
+														class="d-block font-weight-bold name">Marry Andrews</span><span
+														class="date text-black-50">Shared publicly - Jan 2020</span>
+												</div>
+											</div>
+											<div class="mt-2">
+												<p class="comment-text">Lorem ipsum dolor sit amet, consectetur
+													adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+													dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+													exercitation ullamco laboris nisi ut aliquip ex ea commodo
+													consequat.</p>
+											</div>
+										</div>
+										<div class="bg-white">
+											<div class="d-flex flex-row fs-12">
+												<div class="like p-2 cursor"><i class="fa fa-thumbs-o-up"></i><span
+														class="ml-1">Like</span></div>
+												<div class="like p-2 cursor"><i class="fa fa-commenting-o"></i><span
+														class="ml-1">Comment</span></div>
+												<div class="like p-2 cursor"><i class="fa fa-share"></i><span
+														class="ml-1">Share</span></div>
+											</div>
+										</div>
+										<div class="bg-light p-2">
+											<form action="{% url 'pins:detail_pin' pin_obj.id %}" method="post">
+                                                {% csrf_token %}
+												<div class="d-flex flex-row align-items-start mr-2">
+													<img class="rounded-circle" src="https://i.imgur.com/RpzrMR2.jpg"
+														width="40">
+													{{ form.comment }}
+												</div>
+												<div class="mt-2 text-right">
+													<button class="btn btn-primary btn-sm shadow-none"
+														type="submit">Post comment</button>
+													<button class="btn btn-outline-primary btn-sm ml-1 shadow-none"
+														type="button">Cancel</button>
+												</div>
+											</form>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
-					<script type="text/javascript">
-                        var disqus_shortname = 'demowebsite';
-                        var disqus_developer = 0;
-                        (function() {
-                            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-                            dsq.src = window.location.protocol + '//' + disqus_shortname + '.disqus.com/embed.js';
-                            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-                        })();
-                    </script>
-					<noscript>
-					Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-					</noscript>
-				</div>
-				<!--End Comments
-                ================================================== -->
+				</article>
 			</div>
-			</article>
 		</div>
 	</div>
-</div>
-<div class="container-fluid mt-5">
-	<div class="row">
-		<h2 class="font-weight-bold">More like this</h2>
-		<div class="card-columns">
-			{% for pin in suggested_pins %}
+	<div class="container-fluid mt-5">
+		<div class="row">
+			<h2 class="font-weight-bold">More like this</h2>
+			<div class="card-columns">
+				{% for pin in suggested_pins %}
 				<a href="{% url 'pins:detail_pin' pin.id %}" style="color: white;">
 					<div class="card card-pin">
-					<img class="card-img"
-						src="{{ pin.pin_file.url }}"
-						alt="Card image">
+						<img class="card-img" src="{{ pin.pin_file.url }}" alt="Card image">
 						<div class="card-title centered">{{ pin.title }}</div>
 						{% if pin.is_saved %}
-						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}"
+								style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
 						{% else %}
-						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}"
+								style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
 						{% endif %}
 						<div class="bottom-left">
 							{% if pin.user.user_profile.profile_picture %}
-							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
-						src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img
+									class="rounded-circle mr-2" src="{{ pin.user.user_profile.profile_picture.url }}"
+									width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
 							{% else %}
-							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
-						src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img
+									class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="40"
+									height="40"><span class="align-middle">{{pin.user.username}}</span></a>
 							{% endif %}
 						</div>
 					</div>
 				</a>
-			{% endfor %}
+				{% endfor %}
+			</div>
 		</div>
 	</div>
-</div>
 </section>
 {% endblock %}

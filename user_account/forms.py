@@ -41,7 +41,7 @@ class UserRegisterForm(forms.ModelForm):
         user = super(UserRegisterForm, self).save(commit=commit)
         if self.cleaned_data.get('password'):
             user.set_password(user.password)
-        if not is_updated:
+        if not is_updated and False:
             user.is_active = False
             current_site = get_current_site(self.request)
             send_mail_to_user.apply_async(kwargs={

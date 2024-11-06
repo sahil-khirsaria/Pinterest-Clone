@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import never_cache
 
-from pinterest.forms import PinCreateModelForm
+from pinterest.forms import PinCreateModelForm, PinCommentModelForm
 from pinterest.models import Pin, SavedPin, Board
 from pinterest.permissions import IsBoardOwnerMixin, IsPinOwnerMixin
 
@@ -32,15 +32,29 @@ class PinDetailView(IsPinOwnerMixin, generic.DetailView):
     slug_url_kwarg = 'id'
     slug_field = 'id'
     context_object_name = 'pin_obj'
+    form_class = PinCommentModelForm
 
     def get_context_data(self, **kwargs):
         context = super(PinDetailView, self).get_context_data(**kwargs)
+        context['form'] = self.form_class()
         context['suggested_pins'] = self.model.objects.filter(
             category__name__in=list(context['pin_obj'].category.values_list('name', flat=True))
         ).annotate(
             is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
         ).annotate(is_saved=F('is_saved_pin')).distinct().exclude(id=context['pin_obj'].id)
         return context
+
+    def post(self, request, id):
+        data = request.POST
+        import pdb;
+        pdb.set_trace()
+        form = self.form_class(request.POST)
+        form.instance.pin = self.get_object()
+        if form.is_valid():
+            print('FORM IS VALID')
+        else:
+            print(form.errors)
+        return redirect(request.META['HTTP_REFERER'])
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
