@@ -1,0 +1,97 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+	<a class="navbar-brand font-weight-bolder mr-3" href="{% url 'home' %}"><img width="35" height="35"
+			src="{% static 'img/logo.png' %}"></a>
+	<button class="navbar-light navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsDefault"
+		aria-controls="navbarsDefault" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" id="navbarsDefault">
+		<ul class="navbar-nav align-items-center">
+			<li class="nav-item">
+				<a class="nav-link active" href="{% url 'home' %}">Home</a>
+			</li>
+		</ul>
+		<ul class="navbar-nav align-items-center">
+			<li class="nav-item">
+				<a class="nav-link active" href="{% url 'today' 'category' %}">Today</a>
+			</li>
+		</ul>
+		{% if user.is_authenticated %}
+		<ul class="navbar-nav align-items-center">
+			<li class="nav-item dropdown">
+				<a class="nav-link active" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false">Create
+					<div class="dropdown-menu dropdown-menu-left shadow-lg" aria-labelledby="dropdown">
+						<a href="#"></a>
+						<span class="dropdown-item"><a href="{% url 'pins:create_pin' 'pin'%}" class="d-block"> Pin</a></span>
+						<span class="dropdown-item"><a href="{% url 'pins:create_pin' 'idea_pin' %}" class="d-block"> Idea Pin</a></span>
+					</div>
+				</a>
+			</li>
+		</ul>
+		{% endif %}
+		<ul class="navbar-nav align-items-center">
+			<form class="bd-search hidden-sm-down" method="get" action="{% url 'pins:search_pin_by_category' %}">
+				{% csrf_token %}
+				<input type="text" class="form-control bg-graylight border-0 font-weight-bold" name="search_input"
+					placeholder="Search Pin Category..." >
+				<div class="dropdown-menu bd-search-results" id="search-results">
+				</div>
+			</form>
+		</ul>
+		<ul class="navbar-nav ml-auto align-items-center">
+			{% if user.is_authenticated %}
+			<li class="nav-item">
+				<form class="bd-search hidden-sm-down" method="get" action="{% url 'users:user_search' %}">
+				{% csrf_token %}
+				<input type="text" class="form-control bg-graylight border-0 font-weight-bold" name="search_input"
+					placeholder="User Search..." >
+			</form>
+			</li>
+			{% if user.user_profile.profile_picture %}
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'users:user_profile' user.id %}"><img class="rounded-circle mr-2"
+						src="{{user.user_profile.profile_picture.url }}" width="30" height="30"><span
+						class="align-middle">{{ user.username }}</span></a>
+			</li>
+			{% else %}
+			<li class="nav-item">
+				<a class="nav-link" href="{% url 'users:user_profile' user.id %}"><img class="rounded-circle mr-2"
+						src="{% static 'img/av.png' %}" width="30" height="30"><span class="align-middle">{{user.username}}</span></a>
+			</li>
+			{% endif %}
+			<li class="nav-item dropdown">
+				<a class="nav-link" id="dropdown" data-toggle="dropdown" aria-haspopup="true"
+					aria-expanded="false">
+					<svg style="margin-top:10px;" class="_3DJPT" version="1.1" viewbox="0 0 32 32" width="21"
+						height="21" aria-hidden="false" data-reactid="71">
+						<path
+							d="M7 15.5c0 1.9-1.6 3.5-3.5 3.5s-3.5-1.6-3.5-3.5 1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5zm21.5-3.5c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5zm-12.5 0c-1.9 0-3.5 1.6-3.5 3.5s1.6 3.5 3.5 3.5 3.5-1.6 3.5-3.5-1.6-3.5-3.5-3.5z"
+							data-reactid="22"></path>
+					</svg>
+					<div class="dropdown-menu dropdown-menu-right shadow-lg" aria-labelledby="dropdown">
+						<a href="#"></a>
+						<span class="dropdown-item"><a href="{% url 'users:edit_user' user.username %}" class="d-block"><i class="fa fa-edit"></i> Edit
+								Profile</a></span>
+						<span class="dropdown-item"><a href="{% url 'users:change_password' %}" class="d-block"><i
+									class="fa fa-exchange"></i> Change Password</a></span>
+						<span class="dropdown-item"><a href="{% url 'users:delete_account' user.username %}" class="d-block"><i
+									class="fa fa-trash"></i> Delete Account</a></span>
+						<span class="dropdown-item"><a href="{% url 'logout' %}" class="d-block"><i
+									class="fa fa-sign-out"></i> Logout</a></span>
+					</div>
+				</a>
+			</li>
+			{% else %}
+			<li class="nav-item">
+				<a class="nav-link active " href="{% url 'login' %}"><button class="btn btn-primary">Login</button></a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="{% url 'registration' %}"><button
+						class="btn btn-danger">Register</button></a>
+			</li>
+			{% endif %}
+		</ul>
+	</div>
+</nav>

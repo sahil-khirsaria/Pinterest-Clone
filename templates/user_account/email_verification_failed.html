@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Pinterest | Email Verification Failed{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5 text-center">
+    <h2 class="font-weight-bold title">Email Verification Failed</h2>
+    <p class="mt-3">The verification link is invalid or has expired.</p>
+    <a href="{% url 'login' %}" class="btn btn-primary mt-3">Go to Login</a>
+</div>
+{% endblock %}

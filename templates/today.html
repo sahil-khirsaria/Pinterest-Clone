@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Today{% endblock %}
+{% block content %}
+<section class="mt-4 mb-5">
+	<div class="container mb-4">
+		<h1 class="font-weight-bold title mb-5">Today's Trending</h1>
+		<div class="row">
+			<nav class="navbar navbar-expand-lg navbar-light bg-white pl-2 pr-2">
+				<button class="navbar-light navbar-toggler" type="button" data-toggle="collapse"
+					data-target="#navbarsExplore" aria-controls="navbarsDefault" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarsExplore">
+					<ul class="navbar-nav">
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'today' 'Lifestyle' %}">Lifestyle</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'today' 'Food' %}">Food</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'today' 'Home' %}">Home</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{% url 'today' 'Travel' %}">Travel</a>
+						</li>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01"
+								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">More</a>
+							<div class="dropdown-menu shadow-lg" aria-labelledby="dropdown01">
+								<a class="dropdown-item" href="{% url 'today' 'Astronomy' %}">Astronomy</a>
+								<a class="dropdown-item" href="{% url 'today' 'Nature' %}">Nature</a>
+								<a class="dropdown-item" href="{% url 'today' 'Cooking' %}">Cooking</a>
+								<a class="dropdown-item" href="{% url 'today' 'Fashion' %}">Fashion</a>
+								<a class="dropdown-item" href="{% url 'today' 'Wellness' %}">Wellness</a>
+								<a class="dropdown-item" href="{% url 'today' 'Dieting' %}">Dieting</a>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</div>
+		{% if not pins_objs and not categories %}
+		<h5>Pins not found...!</h5>
+		{% endif %}
+	</div>
+	{% if not pins_objs %}
+	<div class="container-fluid">
+		<div class="shadow-row">
+			<div class="shadow-columns">
+				{% for category in categories %}
+                <a href="{% url 'today' category %}" style="text-decoration: none;"><div class="shadow p-3 mb-5 rounded-shadow bg-graylight" style="font-size: 150%; text-align: center;">{{ category }}</div></a>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	{% else %}
+	<div class="container-fluid mt-5">
+	<div class="row">
+		<div class="card-columns">
+			{% for pin in pins_objs %}
+				<a href="{% url 'pins:detail_pin' pin.id %}" style="color: white;">
+					<div class="card card-pin">
+					<img class="card-img"
+						src="{{ pin.pin_file.url }}"
+						alt="Card image">
+						<div class="card-title centered">{{ pin.title }}</div>
+						{% if pin.is_saved %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						{% else %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						{% endif %}
+						{% if user.is_authenticated %}
+						<div class="top-right">
+							<div class="show"><i class="fa fa-star" style="font-size:24px; color: white;"></i>
+								<ul class="list-categories shadow-lg">
+									<li>Add To Board</li>
+									{% for board in user.boards.all %}
+								  	<li><a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=pin.id %}" style="text-decoration:none;">{{ board.name }}</a></li>
+									{% endfor %}
+									<form method="post" class="mt-2" action="{% url 'users:user_profile' user.id %}">
+										{% csrf_token %}
+										<input class="form-control" name="name" type="text" required=True placeholder="Create Board....">
+									</form>
+								</ul>
+							</div>
+						</div>
+						{% endif %}
+						<div class="bottom-left">
+							{% if pin.user.user_profile.profile_picture %}
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
+						src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							{% else %}
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
+						src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							{% endif %}
+						</div>
+					</div>
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+	{% endif %}
+</section>
+{% endblock %}

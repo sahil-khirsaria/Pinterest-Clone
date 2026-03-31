@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Search{% endblock %}
+{% block content %}
+<div class="container mt-5 p-5">
+    <div class="tab-pane" id="account">
+      {% if user.username !=  view.kwargs.username %}
+        {% if view.kwargs.input_field == 'followings' %}
+          <h6>{{view.kwargs.username}}'s FOLLOWINGS</h6>
+        {% else %}
+          <h6>{{view.kwargs.username}}'s FOLLOWERS</h6>
+        {% endif %}
+      {% else %}
+        {% if view.kwargs.input_field == 'followings' %}
+          <h6>YOUR FOLLOWINGS</h6>
+        {% else %}
+          <h6>YOUR FOLLOWERS</h6>
+        {% endif %}
+      {% endif %}
+        <hr>
+      {% if users %}
+{% for obj in users %}
+<section class="vh-100" style="background-color: white;" xmlns="http://www.w3.org/1999/html">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col">
+        <div class="card" style="border-radius: 15px;">
+          <div class="card-body p-4">
+            <div class="d-flex text-black">
+              <div class="flex-shrink-0 mr-3">
+                {% if not obj.user_profile.profile_picture %}
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-profiles/avatar-1.webp"
+                  alt="Generic placeholder image"
+                  style="border-radius: 10px;" width="180px" height="180px">
+                {% else %}
+                <img src="{{ obj.user_profile.profile_picture.url }}"
+                  alt="Generic placeholder image"
+                  style="border-radius: 10px;" width="180px" height="180px">
+                {% endif %}
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h5 class="mb-1">{{ obj.username }}</h5>
+                <p class="mb-2 pb-1" style="color: #2b2a2a;">{{ obj.full_name }}</p>
+                <div class="d-flex justify-content-start rounded p-2 mb-2"
+                  style="background-color: #efefef;">
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">Following</p>
+                    <p class="mb-0">{{ obj.total_following }}</p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">Followers</p>
+                    <p class="mb-0">{{ obj.total_followers }}</p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">Private Pins</p>
+                    <p class="mb-0">{{ obj.total_private_pins }}</p>
+                  </div>
+                  <div class="px-3">
+                    <p class="small text-muted mb-1">Public Pins</p>
+                    <p class="mb-0">{{ obj.total_public_pins }}</p>
+                  </div>
+                </div>
+                <div class="d-flex pt-1">
+                  <button type="button" class="btn btn-primary mr-3">Chat</button>
+                  {% if user in obj.followers.all %}
+                  <button type="button" class="btn btn-primary" id="button{{obj.id}}" disabled>Unfollow</button>
+                  {% else %}
+                  <button type="button" class="btn btn-primary" id="button{{obj.id}}" disabled>Follow</button>
+                  {% endif %}
+                  <a href="{% url 'users:user_profile' obj.id %}"><button type="submit" class="btn btn-primary ml-3">Profile</button></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endfor %}
+{% else %}
+<p class="font-weight-bold">Data Not Found</p>
+{% endif %}
+    </div>
+</div>
+{% endblock %}

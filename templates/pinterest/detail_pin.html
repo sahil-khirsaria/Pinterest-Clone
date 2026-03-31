@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Pin Details{% endblock %}
+{% block content %}
+<section class="pt-5 pb-5">
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-md-7">
+			<article class="card">
+			<img class="card-img-top mb-2" src="{{ pin_obj.pin_file.url }}" alt="Card image">
+			<div class="card-body">
+				<h1 class="card-title display-4">{{ pin_obj.title }}</h1>
+				<h5>{{ pin_obj.about }}</h5>
+				<ul>
+					<li>{{ pin_obj.alter_text }}</li>
+				</ul>
+				{% if pin_obj.user.user_profile.website %}
+				<small class="d-block"><a class="btn btn-sm btn-gray200" href="{{ pin_obj.user.user_profile.website }}"><i class="fa fa-external-link"></i>Visit Website</a></small>
+				{% endif %}
+				<!-- Begin Comments -replace demowebsite with your own id
+                ================================================== -->
+				<div id="comments" class="mt-4">
+					<div id="disqus_thread">
+					</div>
+					<script type="text/javascript">
+                        var disqus_shortname = 'demowebsite';
+                        var disqus_developer = 0;
+                        (function() {
+                            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                            dsq.src = window.location.protocol + '//' + disqus_shortname + '.disqus.com/embed.js';
+                            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                        })();
+                    </script>
+					<noscript>
+					Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+					</noscript>
+				</div>
+				<!--End Comments
+                ================================================== -->
+			</div>
+			</article>
+		</div>
+	</div>
+</div>
+<div class="container-fluid mt-5">
+	<div class="row">
+		<h2 class="font-weight-bold">More like this</h2>
+		<div class="card-columns">
+			{% for pin in suggested_pins %}
+				<a href="{% url 'pins:detail_pin' pin.id %}" style="color: white;">
+					<div class="card card-pin">
+					<img class="card-img"
+						src="{{ pin.pin_file.url }}"
+						alt="Card image">
+						<div class="card-title centered">{{ pin.title }}</div>
+						{% if pin.is_saved %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
+						{% else %}
+						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
+						{% endif %}
+						<div class="bottom-left">
+							{% if pin.user.user_profile.profile_picture %}
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
+						src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							{% else %}
+							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
+						src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+							{% endif %}
+						</div>
+					</div>
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+</section>
+{% endblock %}

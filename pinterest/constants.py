@@ -1,0 +1,1 @@
+PIN_UPLOAD_PATH = 'pins'
