@@ -97,7 +97,7 @@ class UserEmailVerification(generic.View):
             login(request, user)
             return redirect(to='home')
         else:
-            return render(request=request, template_name='', context={})
+            return render(request=request, template_name='user_account/email_verification_failed.html', context={})
 
 
 class UserPasswordResetView(PasswordResetView):

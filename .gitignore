@@ -99,6 +99,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+PintrestEnv/
 env/
 venv/
 ENV/

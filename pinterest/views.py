@@ -72,9 +72,13 @@ class SearchPinByCategoryListView(generic.View):
         return search_query
 
     def get_queryset(self):
-        filter_params = self.search_filters() & (Q(is_private=False) | Q(user=self.request.user))
+        if self.request.user.is_authenticated:
+            filter_params = self.search_filters() & (Q(is_private=False) | Q(user=self.request.user))
+        else:
+            filter_params = self.search_filters() & Q(is_private=False)
+        user_id = self.request.user.id if self.request.user.is_authenticated else None
         return Pin.objects.filter(filter_params).annotate(
-            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
 
 

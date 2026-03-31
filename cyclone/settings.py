@@ -128,6 +128,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -152,7 +153,7 @@ LOGIN_URL = 'login'
 CYCLONE_ENV = ENV_VARIABLES.get('CYCLONE_ENV')
 if not CYCLONE_ENV:
     raise EnvironmentError('Please set environment variable CYCLONE_ENV in .env file')
-elif CYCLONE_ENV not in ['dev', 'stag', 'prod']:
+elif CYCLONE_ENV not in ['dev', 'stage', 'prod']:
     raise EnvironmentError('Please provide valid environment code [dev, stage, prod]')
 
 print(' '*50 + '\n' + '*'*50 + '\n' + 'Using CYCLONE_ENV: ' + (str(CYCLONE_ENV)) + '\n' + '*'*50 + '\n' + ' '*50)
