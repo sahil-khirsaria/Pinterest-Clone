@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Bad Request{% endblock %}
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1.5rem;">
+            <circle cx="100" cy="80" r="55" fill="#FFF0F0"/>
+            <rect x="75" y="55" width="50" height="50" rx="10" fill="#FFE0E0" stroke="#FFB8B8" stroke-width="2"/>
+            <path d="M90 72L110 92M110 72L90 92" stroke="#e60023" stroke-width="3" stroke-linecap="round"/>
+            <path d="M60 40L65 35M140 40L135 35" stroke="#FFD0D0" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="50" cy="70" r="3" fill="#FFD0D0"/>
+            <circle cx="150" cy="65" r="3" fill="#FFD0D0"/>
+            <circle cx="45" cy="100" r="2" fill="#FFE0E0"/>
+            <circle cx="155" cy="95" r="2" fill="#FFE0E0"/>
+            <text x="100" y="135" text-anchor="middle" font-size="12" font-weight="600" fill="#e60023">Invalid Request</text>
+        </svg>
+        <div class="error-code">400</div>
+        <h2>That didn't quite work</h2>
+        <p>The request got a bit confused along the way. Try going back and giving it another shot.</p>
+        <a href="{% url 'home' %}" class="btn btn-pinterest">Go Home</a>
+    </div>
+</div>
+{% endblock %}

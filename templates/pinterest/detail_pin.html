@@ -10,6 +10,14 @@
 			<img class="card-img-top mb-2" src="{{ pin_obj.pin_file.url }}" alt="Card image">
 			<div class="card-body">
 				<h1 class="card-title display-4">{{ pin_obj.title }}</h1>
+
+				{% if pin_obj.user == user %}
+				<div class="mt-3 mb-3">
+					<a href="{% url 'pins:edit_pin' pin_obj.id %}" class="btn btn-outline-pinterest btn-sm"><i class="fa fa-pencil"></i> Edit</a>
+					<a href="{% url 'pins:delete_pin' pin_obj.id %}" class="btn btn-outline-pinterest btn-sm" style="color: #dc3545; border-color: #dc3545;"><i class="fa fa-trash-o"></i> Delete</a>
+				</div>
+				{% endif %}
+
 				<h5>{{ pin_obj.about }}</h5>
 				<ul>
 					<li>{{ pin_obj.alter_text }}</li>
@@ -17,26 +25,109 @@
 				{% if pin_obj.user.user_profile.website %}
 				<small class="d-block"><a class="btn btn-sm btn-gray200" href="{{ pin_obj.user.user_profile.website }}"><i class="fa fa-external-link"></i>Visit Website</a></small>
 				{% endif %}
-				<!-- Begin Comments -replace demowebsite with your own id
-                ================================================== -->
-				<div id="comments" class="mt-4">
-					<div id="disqus_thread">
+
+				<!-- Action buttons -->
+				<div class="mt-3 mb-3 d-flex align-items-center" style="gap: 1rem;">
+					{% if is_liked %}
+					<a href="{% url 'pins:like_unlike_pin' pin_obj.id %}" class="btn btn-sm" style="color: #e60023;">
+						<i class="fa fa-heart" style="font-size: 20px;"></i>
+					</a>
+					{% else %}
+					<a href="{% url 'pins:like_unlike_pin' pin_obj.id %}" class="btn btn-sm" style="color: #767676;">
+						<i class="fa fa-heart-o" style="font-size: 20px;"></i>
+					</a>
+					{% endif %}
+					<span class="font-weight-bold">{{ like_count }} like{{ like_count|pluralize }}</span>
+
+					<!-- Add to Board -->
+					<div class="board-trigger" style="display: inline-block;">
+						<a href="#" class="btn btn-sm" style="color: #767676;" onclick="toggleBoard(event, this)"><i class="fa fa-star" style="font-size: 20px;"></i> Save to Board</a>
+						<div class="board-dropdown" style="left: 0; right: auto;">
+							<div class="board-dropdown-header">Save to board</div>
+							{% for board in boards %}
+							<a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=pin_obj.id %}" class="board-item">
+								<i class="fa fa-th-large"></i> {{ board.name }}
+							</a>
+							{% empty %}
+							<div style="padding: 8px 14px; color: #767676; font-size: 0.85rem;">No boards yet</div>
+							{% endfor %}
+							<form class="board-create-form" method="post" action="{% url 'users:user_profile' user.id %}">
+								{% csrf_token %}
+								<input type="text" name="name" placeholder="New board name..." required>
+								<button type="submit"><i class="fa fa-plus"></i> Create Board</button>
+							</form>
+						</div>
 					</div>
-					<script type="text/javascript">
-                        var disqus_shortname = 'demowebsite';
-                        var disqus_developer = 0;
-                        (function() {
-                            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-                            dsq.src = window.location.protocol + '//' + disqus_shortname + '.disqus.com/embed.js';
-                            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-                        })();
-                    </script>
-					<noscript>
-					Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-					</noscript>
 				</div>
-				<!--End Comments
-                ================================================== -->
+
+				<!-- Comments Section -->
+				<div id="comments" class="mt-4">
+					<h5 class="font-weight-bold mb-3">Comments ({{ comments|length }})</h5>
+
+					<!-- Comment Form -->
+					<form method="post" action="{% url 'pins:add_comment' pin_obj.id %}" class="mb-4">
+						{% csrf_token %}
+						{{ comment_form.text }}
+						<button type="submit" class="btn btn-pinterest btn-sm mt-2">Post Comment</button>
+					</form>
+
+					<!-- Comments List -->
+					{% for comment in comments %}
+					<div class="comment-item mb-3" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 0.75rem;">
+						<div class="d-flex">
+							{% if comment.user.user_profile.profile_picture %}
+							<img class="rounded-circle mr-2" src="{{ comment.user.user_profile.profile_picture.url }}" width="36" height="36" style="object-fit: cover;">
+							{% else %}
+							<img class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="36" height="36">
+							{% endif %}
+							<div style="flex: 1;">
+								<a href="{% url 'users:user_profile' comment.user.id %}" class="font-weight-bold" style="color: #333; text-decoration: none;">{{ comment.user.username }}</a>
+								<span class="text-muted ml-2" style="font-size: 0.8rem;">{{ comment.created_at|timesince }} ago</span>
+								{% if comment.user == user %}
+								<a href="{% url 'pins:delete_comment' comment.id %}" class="ml-2 text-muted" style="font-size: 0.8rem;"><i class="fa fa-trash-o"></i></a>
+								{% endif %}
+								<p class="mb-1 mt-1">{{ comment.text }}</p>
+								<a href="#" class="reply-toggle text-muted" style="font-size: 0.85rem;">
+									<i class="fa fa-reply"></i> Reply {% if comment.replies.count %}({{ comment.replies.count }}){% endif %}
+								</a>
+
+								<!-- Reply Form (hidden by default) -->
+								<form method="post" action="{% url 'pins:add_comment' pin_obj.id %}" class="reply-form mt-2" style="display: none;">
+									{% csrf_token %}
+									<input type="hidden" name="parent_id" value="{{ comment.id }}">
+									<div class="input-group">
+										<input type="text" name="text" class="form-control form-control-sm" placeholder="Write a reply..." required>
+										<div class="input-group-append">
+											<button type="submit" class="btn btn-pinterest btn-sm">Reply</button>
+										</div>
+									</div>
+								</form>
+
+								<!-- Replies -->
+								{% for reply in comment.replies.all %}
+								<div class="d-flex mt-2 ml-3">
+									{% if reply.user.user_profile.profile_picture %}
+									<img class="rounded-circle mr-2" src="{{ reply.user.user_profile.profile_picture.url }}" width="28" height="28" style="object-fit: cover;">
+									{% else %}
+									<img class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="28" height="28">
+									{% endif %}
+									<div>
+										<a href="{% url 'users:user_profile' reply.user.id %}" class="font-weight-bold" style="color: #333; text-decoration: none; font-size: 0.9rem;">{{ reply.user.username }}</a>
+										<span class="text-muted ml-1" style="font-size: 0.75rem;">{{ reply.created_at|timesince }} ago</span>
+										{% if reply.user == user %}
+										<a href="{% url 'pins:delete_comment' reply.id %}" class="ml-1 text-muted" style="font-size: 0.75rem;"><i class="fa fa-trash-o"></i></a>
+										{% endif %}
+										<p class="mb-0 mt-1" style="font-size: 0.9rem;">{{ reply.text }}</p>
+									</div>
+								</div>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+					{% empty %}
+					<p class="text-muted">No comments yet. Be the first to comment!</p>
+					{% endfor %}
+				</div>
 			</div>
 			</article>
 		</div>
@@ -47,28 +138,23 @@
 		<h2 class="font-weight-bold">More like this</h2>
 		<div class="card-columns">
 			{% for pin in suggested_pins %}
-				<a href="{% url 'pins:detail_pin' pin.id %}" style="color: white;">
-					<div class="card card-pin">
-					<img class="card-img"
-						src="{{ pin.pin_file.url }}"
-						alt="Card image">
-						<div class="card-title centered">{{ pin.title }}</div>
-						{% if pin.is_saved %}
-						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
-						{% else %}
-						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
-						{% endif %}
-						<div class="bottom-left">
-							{% if pin.user.user_profile.profile_picture %}
-							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
-						src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
-							{% else %}
-							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
-						src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
-							{% endif %}
-						</div>
-					</div>
-				</a>
+			<div class="card card-pin" data-href="{% url 'pins:detail_pin' pin.id %}" style="cursor: pointer;">
+				<img class="card-img" src="{{ pin.pin_file.url }}" alt="Card image">
+				<div class="card-title centered">{{ pin.title }}</div>
+				<div class="bottom-right">
+					{% if pin.is_liked %}<a href="{% url 'pins:like_unlike_pin' pin.id %}" style="color: #e60023;"><i class="fa fa-heart" style="font-size:20px"></i></a>
+					{% else %}<a href="{% url 'pins:like_unlike_pin' pin.id %}" style="color: white;"><i class="fa fa-heart-o" style="font-size:20px"></i></a>{% endif %}
+					{% if pin.is_saved %}<a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a>
+					{% else %}<a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a>{% endif %}
+				</div>
+				<div class="bottom-left">
+					{% if pin.user.user_profile.profile_picture %}
+					<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2" src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+					{% else %}
+					<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+					{% endif %}
+				</div>
+			</div>
 			{% endfor %}
 		</div>
 	</div>

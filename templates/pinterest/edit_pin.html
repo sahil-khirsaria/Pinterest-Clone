@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Pinterest | Upload Pin{% endblock %}
+{% block title %}Pinterest | Edit Pin{% endblock %}
 {% block content %}
 <div class="container mt-5 mb-5">
     <div class="create-container">
-        <h2><i class="fa fa-plus-circle"></i> Create Pin</h2>
+        <h2><i class="fa fa-pencil"></i> Edit Pin</h2>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
-            <input type="submit" value="Create Pin" class="btn-create">
+            <input type="submit" value="Save Changes" class="btn-create">
         </form>
     </div>
 </div>

@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Pinterest | Registration{% endblock %}
+{% block title %}Pinterest | Sign Up{% endblock %}
 {% block content %}
-<div class="container mt-5 mb-5">
-    <h2 class="">Registration</h2><br>
-    <div class="login">
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <img src="{% static 'img/logo.svg' %}" class="auth-logo" alt="Pinterest" width="40" height="40">
+        <h2>Create an account</h2>
+        <p class="auth-subtitle">Find new ideas to try</p>
         <form method="POST">
             {% csrf_token %}
             {{form.as_p}}
-            <input type="submit" value="Register" class="btn btn-primary">
+            <input type="submit" value="Sign up" class="btn-auth">
         </form>
+        <div class="auth-divider">or</div>
+        <a href="{% url 'login' %}" class="auth-link">Already have an account? Log in</a>
     </div>
 </div>
-
 {% endblock %}

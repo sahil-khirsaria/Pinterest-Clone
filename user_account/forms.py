@@ -38,11 +38,13 @@ class UserRegisterForm(forms.ModelForm):
 
     def save(self, commit=True):
         is_updated = self.instance.pk
-        user = super(UserRegisterForm, self).save(commit=commit)
+        user = super(UserRegisterForm, self).save(commit=False)
         if self.cleaned_data.get('password'):
-            user.set_password(user.password)
+            user.set_password(self.cleaned_data['password'])
         if not is_updated:
             user.is_active = False
+        user.save()
+        if not is_updated:
             current_site = get_current_site(self.request)
             send_mail_to_user.apply_async(kwargs={
                 'subject': 'VERIFY YOUR EMAIL',
@@ -54,7 +56,6 @@ class UserRegisterForm(forms.ModelForm):
                     'token': account_activation_token.make_token(user),
                 }
             })
-        user.save()
         return user
 
 
@@ -72,8 +73,7 @@ class UserUpdateForm(forms.ModelForm):
 class UserDetailUpdateForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        # fields = ('profile_picture', 'cover_picture', 'about', 'website', 'country', 'language')
-        fields = ('about', 'website', 'country', 'language')
+        fields = ('profile_picture', 'cover_picture', 'about', 'website', 'country', 'language')
 
     def __init__(self, *args, **kwargs):
         super(UserDetailUpdateForm, self).__init__(*args, **kwargs)

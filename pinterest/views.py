@@ -1,12 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import FilteredRelation, Q, F
+from django.core.exceptions import PermissionDenied
+from django.db.models import FilteredRelation, Q, F, Count
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.cache import never_cache
 
-from pinterest.forms import PinCreateModelForm
-from pinterest.models import Pin, SavedPin, Board
+from pinterest.forms import PinCreateModelForm, PinUpdateModelForm, CommentForm
+from pinterest.models import Pin, SavedPin, Board, Like, Comment
 from pinterest.permissions import IsBoardOwnerMixin, IsPinOwnerMixin
 
 
@@ -26,6 +28,37 @@ class PinCreateView(generic.CreateView):
 
 
 @method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class PinUpdateView(generic.UpdateView):
+    model = Pin
+    form_class = PinUpdateModelForm
+    template_name = 'pinterest/edit_pin.html'
+    slug_url_kwarg = 'id'
+    slug_field = 'id'
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().user != request.user:
+            raise PermissionDenied("You are not the owner of this pin")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('pins:detail_pin', kwargs={'id': self.object.id})
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class PinDeleteView(generic.DeleteView):
+    model = Pin
+    template_name = 'pinterest/confirm_delete_pin.html'
+    slug_url_kwarg = 'id'
+    slug_field = 'id'
+    success_url = '/'
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_object().user != request.user:
+            raise PermissionDenied("You are not the owner of this pin")
+        return super().dispatch(request, *args, **kwargs)
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
 class PinDetailView(IsPinOwnerMixin, generic.DetailView):
     model = Pin
     template_name = 'pinterest/detail_pin.html'
@@ -35,11 +68,32 @@ class PinDetailView(IsPinOwnerMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(PinDetailView, self).get_context_data(**kwargs)
+        pin = context['pin_obj']
+        user_id = self.request.user.id
+
+        # Suggested pins
         context['suggested_pins'] = self.model.objects.filter(
-            category__name__in=list(context['pin_obj'].category.values_list('name', flat=True))
+            category__name__in=list(pin.category.values_list('name', flat=True))
         ).annotate(
-            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-        ).annotate(is_saved=F('is_saved_pin')).distinct().exclude(id=context['pin_obj'].id)
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+            is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+        ).annotate(
+            is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+            like_count=Count('likes', distinct=True)
+        ).distinct().exclude(id=pin.id)
+
+        # Likes
+        context['like_count'] = pin.likes.count()
+        context['is_liked'] = pin.likes.filter(user_id=user_id).exists()
+
+        # Comments (top-level with replies prefetched)
+        context['comments'] = pin.comments.filter(parent__isnull=True).select_related(
+            'user', 'user__user_profile'
+        ).prefetch_related('replies__user', 'replies__user__user_profile')
+        context['comment_form'] = CommentForm()
+
+        # Boards
+        context['boards'] = self.request.user.boards.all()
         return context
 
 
@@ -139,5 +193,52 @@ class RemovePinFromBoard(IsBoardOwnerMixin, generic.View):
             return None
 
 
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class LikeUnlikePin(generic.View):
+    def get(self, request, pin_id):
+        like_obj = Like.objects.filter(pin_id=pin_id, user=request.user)
+        if like_obj:
+            like_obj.delete()
+        else:
+            Like.objects.create(pin_id=pin_id, user=request.user)
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class AddComment(generic.View):
+    def post(self, request, pin_id):
+        text = request.POST.get('text', '').strip()
+        parent_id = request.POST.get('parent_id')
+        if text:
+            comment = Comment(pin_id=pin_id, user=request.user, text=text)
+            if parent_id:
+                comment.parent_id = parent_id
+            comment.save()
+        return redirect('pins:detail_pin', id=pin_id)
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class DeleteComment(generic.View):
+    def get(self, request, comment_id):
+        comment = Comment.objects.filter(id=comment_id, user=request.user).first()
+        if comment:
+            pin_id = comment.pin_id
+            comment.delete()
+            return redirect('pins:detail_pin', id=pin_id)
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
 def error_404(request, exception):
-    return render(request=request, template_name='404.html')
+    return render(request=request, template_name='404.html', status=404)
+
+
+def error_400(request, exception):
+    return render(request=request, template_name='400.html', status=400)
+
+
+def error_403(request, exception):
+    return render(request=request, template_name='403.html', status=403)
+
+
+def error_500(request):
+    return render(request=request, template_name='500.html', status=500)

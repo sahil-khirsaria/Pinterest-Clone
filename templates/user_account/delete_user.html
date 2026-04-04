@@ -1,20 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Pinterest | Delete Profile{% endblock %}
+{% block title %}Pinterest | Delete Account{% endblock %}
 {% block content %}
-<div class="container mt-5 mb-5 p-5">
-    <div class="tab-pane" id="account">
-        <h6>ACCOUNT SETTINGS</h6>
-        <hr>
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <h2 style="color: #e60023;">Delete Account</h2>
+        <p class="auth-subtitle">Once you delete your account, there is no going back. Please be certain.</p>
         <form method="post" action="{% url 'users:delete_account' user_obj.username %}">
             {% csrf_token %}
-            <div class="form-group">
-                <label class="d-block text-danger">Delete Account</label>
-                <p class="text-muted font-size-sm">Once you delete your account, there is no going back.
-                    Please be certain.</p>
-            </div>
-            <input value="Delete Account" type="submit" class="btn btn-danger">
+            <input type="submit" value="Delete My Account" class="btn-auth" style="background-color: #e60023;">
         </form>
+        <a href="{% url 'users:user_profile' user.id %}" class="auth-link" style="color: #333;">Cancel</a>
     </div>
 </div>
 {% endblock %}

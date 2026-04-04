@@ -94,3 +94,34 @@ class Board(BaseModel):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.name = self.name.title()
         return super(Board, self).save(force_insert, force_update, using, update_fields)
+
+
+class Like(BaseModel):
+    user = models.ForeignKey(verbose_name=_('User'), to=User, on_delete=models.CASCADE, related_name='likes')
+    pin = models.ForeignKey(verbose_name=_('Pin'), to=Pin, on_delete=models.CASCADE, related_name='likes')
+
+    class Meta:
+        verbose_name = 'Like'
+        verbose_name_plural = 'Likes'
+        unique_together = ('user', 'pin')
+
+    def __str__(self):
+        return f'{self.user.username} likes {self.pin.title}'
+
+
+class Comment(BaseModel):
+    user = models.ForeignKey(verbose_name=_('User'), to=User, on_delete=models.CASCADE, related_name='comments')
+    pin = models.ForeignKey(verbose_name=_('Pin'), to=Pin, on_delete=models.CASCADE, related_name='comments')
+    parent = models.ForeignKey(
+        verbose_name=_('Reply To'), to='self', on_delete=models.CASCADE,
+        related_name='replies', null=True, blank=True
+    )
+    text = models.TextField(verbose_name=_('Comment'))
+
+    class Meta:
+        verbose_name = 'Comment'
+        verbose_name_plural = 'Comments'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} on {self.pin.title}: {self.text[:50]}'

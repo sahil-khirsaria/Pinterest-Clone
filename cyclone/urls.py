@@ -48,4 +48,7 @@ urlpatterns = [
     settings.STATIC_URL, document_root=settings.STATIC_ROOT
     )
 
+handler400 = "pinterest.views.error_400"
+handler403 = "pinterest.views.error_403"
 handler404 = "pinterest.views.error_404"
+handler500 = "pinterest.views.error_500"

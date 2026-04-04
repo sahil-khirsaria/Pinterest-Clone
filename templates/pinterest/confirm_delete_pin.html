@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Delete Pin{% endblock %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="create-container">
+        <h2><i class="fa fa-trash"></i> Delete Pin</h2>
+        <p>Are you sure you want to delete "<strong>{{ object.title }}</strong>"?</p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="Confirm Delete" class="btn-create" style="background-color: #dc3545 !important;">
+            <a href="{% url 'pins:detail_pin' object.id %}" class="btn btn-outline-pinterest mt-2 d-block text-center">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

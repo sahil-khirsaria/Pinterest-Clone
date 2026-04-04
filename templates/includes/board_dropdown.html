@@ -1,0 +1,18 @@
+<div class="board-trigger">
+	<i class="fa fa-star board-star" onclick="toggleBoard(event, this)"></i>
+	<div class="board-dropdown">
+		<div class="board-dropdown-header">Save to board</div>
+		{% for board in boards %}
+		<a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=pin_id %}" class="board-item">
+			<i class="fa fa-th-large"></i> {{ board.name }}
+		</a>
+		{% empty %}
+		<div style="padding: 8px 14px; color: #767676; font-size: 0.85rem;">No boards yet</div>
+		{% endfor %}
+		<form class="board-create-form" method="post" action="{% url 'users:user_profile' user.id %}">
+			{% csrf_token %}
+			<input type="text" name="name" placeholder="New board name..." required>
+			<button type="submit"><i class="fa fa-plus"></i> Create Board</button>
+		</form>
+	</div>
+</div>

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pinterest | Access Denied{% endblock %}
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1.5rem;">
+            <circle cx="100" cy="80" r="55" fill="#FFF0F0"/>
+            <rect x="80" y="70" width="40" height="35" rx="5" fill="#FFE0E0" stroke="#e60023" stroke-width="2"/>
+            <path d="M88 70V58C88 51.4 93.4 46 100 46C106.6 46 112 51.4 112 58V70" stroke="#e60023" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="100" cy="85" r="4" fill="#e60023"/>
+            <path d="M100 89V96" stroke="#e60023" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M55 50L60 45M145 50L140 45" stroke="#FFD0D0" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="45" cy="80" r="3" fill="#FFD0D0"/>
+            <circle cx="155" cy="75" r="3" fill="#FFD0D0"/>
+            <text x="100" y="135" text-anchor="middle" font-size="12" font-weight="600" fill="#e60023">Restricted Area</text>
+        </svg>
+        <div class="error-code">403</div>
+        <h2>This door is locked</h2>
+        <p>You don't have permission to access this page. If you think this is a mistake, try logging in or contact support.</p>
+        <a href="{% url 'home' %}" class="btn btn-pinterest">Go Home</a>
+    </div>
+</div>
+{% endblock %}
