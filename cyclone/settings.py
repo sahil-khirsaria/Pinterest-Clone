@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
     # Third Party Packages
     'django_extensions',
+    'storages',
 
     # Our APPs
     'user_account',

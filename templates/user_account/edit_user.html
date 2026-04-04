@@ -2,17 +2,14 @@
 {% load static %}
 {% block title %}Pinterest | Update Profile{% endblock %}
 {% block content %}
-<div class="container mt-5 mb-5 p-5">
-    <div class="tab-pane active" id="profile">
-        <h6>YOUR PROFILE INFORMATION</h6>
-        <hr>
-        <form method="post">
+<div class="container mt-5 mb-5">
+    <div class="create-container">
+        <h2><i class="fa fa-user"></i> Edit Profile</h2>
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="form-group">
-                {{ form.as_p }}
-                {{ profile_form.as_p }}
-            </div>
-            <input type="submit" value="Update" class="btn btn-primary form-control">
+            {{ form.as_p }}
+            {{ profile_form.as_p }}
+            <input type="submit" value="Save Changes" class="btn-create">
         </form>
     </div>
 </div>

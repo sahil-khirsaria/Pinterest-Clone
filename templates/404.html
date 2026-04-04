@@ -1,10 +1,24 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Pinterest | Search{% endblock %}
+{% block title %}Pinterest | Page Not Found{% endblock %}
 {% block content %}
-<div class="container mt-5 p-5">
-    <div class="tab-pane" id="account">
-        <h1>404 PAGE NOT FOUND</h1>
+<div class="error-container">
+    <div class="error-card">
+        <svg width="200" height="160" viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1.5rem;">
+            <circle cx="100" cy="80" r="60" fill="#FFF0F0"/>
+            <circle cx="100" cy="80" r="45" fill="#FFE0E0"/>
+            <path d="M80 70C80 70 85 60 100 60C115 60 120 70 120 70" stroke="#e60023" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="85" cy="75" r="4" fill="#e60023"/>
+            <circle cx="115" cy="75" r="4" fill="#e60023"/>
+            <path d="M88 95C88 95 94 88 100 88C106 88 112 95 112 95" stroke="#e60023" stroke-width="3" stroke-linecap="round"/>
+            <text x="100" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#e60023">Oops!</text>
+            <path d="M55 120L60 110M145 120L140 110" stroke="#FFB8B8" stroke-width="2" stroke-linecap="round"/>
+            <path d="M65 130L70 120M135 130L130 120" stroke="#FFD0D0" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="error-code">404</div>
+        <h2>Lost in the pins!</h2>
+        <p>We looked everywhere but couldn't find that page. It might have been moved or doesn't exist.</p>
+        <a href="{% url 'home' %}" class="btn btn-pinterest">Take me home</a>
     </div>
 </div>
 {% endblock %}

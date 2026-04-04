@@ -3,7 +3,8 @@ from django.urls import path
 from user_account.views import (
     UserProfileView, UserSearchView, UserUpdateView, UserDeleteView, FollowUnfollowUser, UserPasswordChangeView,
     UserEmailVerification, UserPasswordResetView, UserPasswordResetConfirmView, UserPasswordResetDoneView,
-    UserPasswordResetCompleteView, GetFollowingsList, UserPinList, UserBoardPinList
+    UserPasswordResetCompleteView, GetFollowingsList, UserPinList, UserBoardPinList,
+    ChatInboxView, ChatRoomView, ChatMessagesAPIView
 )
 
 app_name = 'users'
@@ -29,5 +30,9 @@ urlpatterns = [
 
     path('<str:username>/pins', UserPinList.as_view(), name='user_pins'),
 
-    path('<str:username>/<str:board_name>/pins', UserBoardPinList.as_view(), name='board_pins')
+    path('<str:username>/<str:board_name>/pins', UserBoardPinList.as_view(), name='board_pins'),
+
+    path('chat/', ChatInboxView.as_view(), name='chat_inbox'),
+    path('chat/<int:user_id>', ChatRoomView.as_view(), name='chat_room'),
+    path('chat/<int:user_id>/messages', ChatMessagesAPIView.as_view(), name='chat_messages_api'),
 ]

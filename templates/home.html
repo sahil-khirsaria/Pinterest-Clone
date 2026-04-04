@@ -3,54 +3,54 @@
 {% block title %}Pinterest | Home{% endblock %}
 {% block content %}
 <section class="mt-4 mb-5">
-	<div class="container mb-4">
-		<h1 class="font-weight-bold title">PINS YOU WILL BE LIKE...!</h1>
+	<div class="page-header">
+		<h1>Discover Ideas</h1>
+		{% if not pins_objs %}
+		<p>Explore trending pins curated just for you</p>
+		{% endif %}
 	</div>
+	{% if pins_objs %}
 	<div class="container-fluid">
 		<div class="row">
 			<div class="card-columns">
 				{% for pin in pins_objs %}
-				<a href="{% url 'pins:detail_pin' pin.id %}" style="color: white;">
-					<div class="card card-pin">
-					<img class="card-img"
-						src="{{ pin.pin_file.url }}"
-						alt="Card image">
-						<div class="card-title centered">{{ pin.title }}</div>
-						{% if user.is_authenticated %}
-						{% if pin.is_saved %}
-						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a></div>
-						{% else %}
-						<div class="bottom-right"><a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a></div>
-						{% endif %}
-						<div class="top-right">
-							<div class="show"><i class="fa fa-star" style="font-size:24px; color: white;"></i>
-								<ul class="list-categories shadow-lg">
-									<li>Add To Board</li>
-									{% for board in boards %}
-								  	<li><a href="{% url 'pins:pin_add_to_board' board_id=board.id pin_id=pin.id %}" style="text-decoration:none;">{{ board.name }}</a></li>
-									{% endfor %}
-									<form method="post" class="mt-2" action="{% url 'users:user_profile' user.id %}">
-										{% csrf_token %}
-										<input class="form-control" name="name" type="text" required=True placeholder="Create Board....">
-									</form>
-								</ul>
-							</div>
-						</div>
-						{% endif %}
-						<div class="bottom-left">
-							{% if pin.user.user_profile.profile_picture %}
-							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
-						src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
-							{% else %}
-							<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2"
-						src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
-							{% endif %}
-						</div>
+				<div class="card card-pin" data-href="{% url 'pins:detail_pin' pin.id %}" style="cursor: pointer;">
+					<img class="card-img" src="{{ pin.pin_file.url }}" alt="Card image">
+					<div class="card-title centered">{{ pin.title }}</div>
+					{% if user.is_authenticated %}
+					<div class="bottom-right">
+						{% if pin.is_liked %}<a href="{% url 'pins:like_unlike_pin' pin.id %}" style="color: #e60023;"><i class="fa fa-heart" style="font-size:20px"></i></a>
+						{% else %}<a href="{% url 'pins:like_unlike_pin' pin.id %}" style="color: white;"><i class="fa fa-heart-o" style="font-size:20px"></i></a>{% endif %}
+						{% if pin.is_saved %}<a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark" style="font-size:24px"></i></a>
+						{% else %}<a href="{% url 'pins:save_unsave_pin' pin.id %}" style="color: white;"><i class="fa fa-bookmark-o" style="font-size:24px"></i></a>{% endif %}
 					</div>
-				</a>
-			{% endfor %}
+					<div class="top-right">
+						{% with pin_id=pin.id %}{% include 'includes/board_dropdown.html' %}{% endwith %}
+					</div>
+					{% endif %}
+					<div class="bottom-left">
+						{% if pin.user.user_profile.profile_picture %}
+						<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2" src="{{ pin.user.user_profile.profile_picture.url }}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+						{% else %}
+						<a href="{% url 'users:user_profile' pin.user.id %}" style="color: white;"><img class="rounded-circle mr-2" src="{% static 'img/av.png' %}" width="40" height="40"><span class="align-middle">{{pin.user.username}}</span></a>
+						{% endif %}
+					</div>
+				</div>
+				{% endfor %}
 			</div>
 		</div>
 	</div>
+	{% else %}
+	<div class="empty-state">
+		<div class="empty-icon"><i class="fa fa-picture-o"></i></div>
+		<h3>No pins yet</h3>
+		<p>Start exploring categories or create your first pin to see content here.</p>
+		{% if user.is_authenticated %}
+		<a href="{% url 'pins:create_pin' 'pin' %}" class="btn btn-pinterest mt-3">Create a Pin</a>
+		{% else %}
+		<a href="{% url 'registration' %}" class="btn btn-pinterest mt-3">Sign up to get started</a>
+		{% endif %}
+	</div>
+	{% endif %}
 </section>
 {% endblock %}

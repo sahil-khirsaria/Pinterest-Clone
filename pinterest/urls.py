@@ -1,16 +1,23 @@
 from django.urls import path
 
 from pinterest.views import (
-    PinCreateView, PinDetailView, SaveUnsavePin, SearchPinByCategoryListView, PinAddToBoard, DeleteBoard,
-    MakePublicPrivateBoard, RemovePinFromBoard
+    PinCreateView, PinUpdateView, PinDeleteView, PinDetailView, SaveUnsavePin,
+    SearchPinByCategoryListView, PinAddToBoard, DeleteBoard,
+    MakePublicPrivateBoard, RemovePinFromBoard, LikeUnlikePin, AddComment, DeleteComment
 )
 
 app_name = 'pins'
 urlpatterns = [
     path('pin/create/<str:input_value>', PinCreateView.as_view(), name='create_pin'),
+    path('pin/edit/<int:id>', PinUpdateView.as_view(), name='edit_pin'),
+    path('pin/delete/<int:id>', PinDeleteView.as_view(), name='delete_pin'),
     path('pin/details/<int:id>', PinDetailView.as_view(), name='detail_pin'),
 
     path('pin/save-unsave-pin/<int:pin_id>', SaveUnsavePin.as_view(), name='save_unsave_pin'),
+    path('pin/like-unlike/<int:pin_id>', LikeUnlikePin.as_view(), name='like_unlike_pin'),
+
+    path('pin/comment/<int:pin_id>', AddComment.as_view(), name='add_comment'),
+    path('pin/delete-comment/<int:comment_id>', DeleteComment.as_view(), name='delete_comment'),
 
     path('pin/search-category', SearchPinByCategoryListView.as_view(), name='search_pin_by_category'),
 

@@ -85,3 +85,23 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class ChatMessage(models.Model):
+    sender = models.ForeignKey(
+        verbose_name=_('Sender'), to='User', on_delete=models.CASCADE, related_name='sent_messages'
+    )
+    receiver = models.ForeignKey(
+        verbose_name=_('Receiver'), to='User', on_delete=models.CASCADE, related_name='received_messages'
+    )
+    text = models.TextField(verbose_name=_('Message'))
+    created_at = models.DateTimeField(verbose_name=_('Sent At'), auto_now_add=True)
+    is_read = models.BooleanField(verbose_name=_('Read'), default=False)
+
+    class Meta:
+        verbose_name = 'Chat Message'
+        verbose_name_plural = 'Chat Messages'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'{self.sender.username} -> {self.receiver.username}: {self.text[:50]}'

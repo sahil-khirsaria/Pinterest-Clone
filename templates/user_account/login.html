@@ -1,18 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Pinterest | Update Profile{% endblock %}
+{% block title %}Pinterest | Login{% endblock %}
 {% block content %}
-<div class="container mt-5 mb-5 p-5">
-    <div class="tab-pane active" id="profile">
-        <h6>LOGIN</h6>
-        <hr>
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <img src="{% static 'img/logo.svg' %}" class="auth-logo" alt="Pinterest" width="40" height="40">
+        <h2>Welcome back</h2>
+        <p class="auth-subtitle">Log in to your Pinterest account</p>
         <form method="POST">
             {% csrf_token %}
             {{form.as_p}}
-            <input type="submit" value="Login" class="btn btn-primary">
-            <br><br>
-            <a href="{% url 'users:password_reset' %}">Forgot Password ?</a>
+            <input type="submit" value="Log in" class="btn-auth">
         </form>
+        <a href="{% url 'users:password_reset' %}" class="auth-link">Forgot your password?</a>
+        <div class="auth-divider">or</div>
+        <a href="{% url 'registration' %}" class="auth-link">Don't have an account? Sign up</a>
     </div>
 </div>
 {% endblock %}

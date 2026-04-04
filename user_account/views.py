@@ -1,11 +1,13 @@
 import datetime
 
 from django.contrib.auth import get_user_model, logout, login
+from django.http import JsonResponse
+from django.utils import timezone as tz
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView, PasswordResetDoneView, PasswordResetView, \
     PasswordResetConfirmView, PasswordResetCompleteView
-from django.db.models import Q, FilteredRelation, F
+from django.db.models import Q, FilteredRelation, F, Count
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
@@ -17,7 +19,7 @@ from django.views.decorators.cache import never_cache
 from pinterest.models import Pin, Board
 from pinterest.permissions import PrivateBoardViewMixin
 from user_account.forms import UserRegisterForm, UserUpdateForm, UserDetailUpdateForm, UserPasswordResetForm
-from user_account.models import UserProfile
+from user_account.models import UserProfile, ChatMessage
 from user_account.permissions import IsOwnerMixin
 from user_account.tokens import account_activation_token
 
@@ -34,16 +36,20 @@ class HomePage(generic.TemplateView):
         return context
 
     def search_filters(self):
-        search_filter = Q()
+        search_filter = Q(is_private=False)
         if self.request.user.is_authenticated:
-            search_filter = Q(user=self.request.user) | Q(is_private=False) & \
-                            Q(category__name__in=self.request.user.interest.values_list('name', flat=True))
+            search_filter = Q(user=self.request.user) | Q(is_private=False)
         return search_filter
 
     def get_queryset(self):
+        user_id = self.request.user.id
         return Pin.objects.filter(self.search_filters()).annotate(
-            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+            is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+        ).annotate(
+            is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+            like_count=Count('likes', distinct=True)
+        ).distinct()[:20]
 
     def get_boards(self):
         if self.request.user.is_authenticated:
@@ -56,17 +62,22 @@ class TodayPinsView(generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(TodayPinsView, self).get_context_data(**kwargs)
-        today = datetime.date.today()
+        today = tz.localdate()
         if self.kwargs.get('category_name') == 'category':
             context['categories'] = Pin.objects.filter(created_at__date=today).values_list(
                 'category__name', flat=True).distinct()[:15]
         else:
             filters = Q(created_at__date=today, category__name=self.kwargs.get('category_name'))
             if self.request.user.is_authenticated:
+                user_id = self.request.user.id
                 filters = filters & (Q(is_private=False) | Q(user=self.request.user))
                 context['pins_objs'] = Pin.objects.filter(filters).annotate(
-                    is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-                ).annotate(is_saved=F('is_saved_pin')).distinct().order_by('-created_at')
+                    is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+                    is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+                ).annotate(
+                    is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+                    like_count=Count('likes', distinct=True)
+                ).distinct().order_by('-created_at')
             else:
                 context['pins_objs'] = Pin.objects.filter(filters)
         return context
@@ -147,7 +158,7 @@ class UserUpdateView(IsOwnerMixin, generic.UpdateView):
 
     def post(self, request, *args, **kwargs):
         user_profile_obj, created = UserProfile.objects.get_or_create(user=request.user)
-        profile_form = self.profile_form(self.request.POST, instance=user_profile_obj)
+        profile_form = self.profile_form(self.request.POST, self.request.FILES, instance=user_profile_obj)
         if profile_form.is_valid():
             profile_form.save()
         return super(UserUpdateView, self).post(request, *args, **kwargs)
@@ -184,19 +195,28 @@ class UserProfileView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(UserProfileView, self).get_context_data(**kwargs)
+        user_id = self.request.user.id
         if self.request.user == context['user_obj']:
             context['created_pins'] = context['user_obj'].pins.annotate(
-                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-            ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+                is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+            ).annotate(
+                is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+                like_count=Count('likes', distinct=True)
+            ).distinct()[:20]
             context['boards'] = context['user_obj'].boards.all()
         else:
             context['created_pins'] = context['user_obj'].pins.filter(is_private=False).annotate(
-                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-            ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+                is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+            ).annotate(
+                is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+                like_count=Count('likes', distinct=True)
+            ).distinct()[:20]
             context['boards'] = context['user_obj'].boards.filter(is_private=False)
         context['user_boards'] = self.request.user.boards.all()
         context['saved_pins'] = context['user_obj'].saved_pins.annotate(
-            is_saved_pin=FilteredRelation('pin__saved_pins', condition=Q(pin__saved_pins__user_id=self.request.user.id))
+            is_saved_pin=FilteredRelation('pin__saved_pins', condition=Q(pin__saved_pins__user_id=user_id))
         ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
         return context
 
@@ -284,12 +304,17 @@ class UserPinList(generic.ListView):
     context_object_name = 'pins'
 
     def get_queryset(self):
+        user_id = self.request.user.id
         filter_params = Q(user__username=self.kwargs.get('username'))
         if self.kwargs.get('username') != self.request.user.username:
             filter_params = filter_params & Q(is_private=False)
         return Pin.objects.filter(filter_params).annotate(
-            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.request.user.id))
-        ).annotate(is_saved=F('is_saved_pin')).distinct()[:20]
+            is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+            is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+        ).annotate(
+            is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+            like_count=Count('likes', distinct=True)
+        ).distinct()[:20]
 
 
 class UserBoardPinList(PrivateBoardViewMixin, generic.ListView):
@@ -310,9 +335,14 @@ class UserBoardPinList(PrivateBoardViewMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if context['board_obj']:
+            user_id = self.get_user_obj().id if self.get_user_obj() else None
             context['pins'] = context['board_obj'].pin.annotate(
-                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=self.get_user_obj().id))
-            ).annotate(is_saved=F('is_saved_pin'))
+                is_saved_pin=FilteredRelation('saved_pins', condition=Q(saved_pins__user_id=user_id)),
+                is_liked_pin=FilteredRelation('likes', condition=Q(likes__user_id=user_id))
+            ).annotate(
+                is_saved=F('is_saved_pin'), is_liked=F('is_liked_pin'),
+                like_count=Count('likes', distinct=True)
+            )
         return context
 
     def get_user_obj(self):
@@ -326,3 +356,66 @@ class UserBoardPinList(PrivateBoardViewMixin, generic.ListView):
         board_id = self.kwargs.get('board_name')
         username = self.kwargs.get('username')
         return Board.objects.filter(name=board_id, user__username=username).first()
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class ChatInboxView(generic.View):
+    template_name = 'user_account/chat_inbox.html'
+
+    def get(self, request):
+        # Get all users the current user has chatted with
+        sent_to = ChatMessage.objects.filter(sender=request.user).values_list('receiver', flat=True).distinct()
+        received_from = ChatMessage.objects.filter(receiver=request.user).values_list('sender', flat=True).distinct()
+        chat_user_ids = set(sent_to) | set(received_from)
+        chat_users = User.objects.filter(id__in=chat_user_ids)
+        return render(request, self.template_name, {'chat_users': chat_users})
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class ChatRoomView(generic.View):
+    template_name = 'user_account/chat_room.html'
+
+    def get(self, request, user_id):
+        other_user = User.objects.get(id=user_id)
+        messages = ChatMessage.objects.filter(
+            (Q(sender=request.user) & Q(receiver=other_user)) |
+            (Q(sender=other_user) & Q(receiver=request.user))
+        ).order_by('created_at')
+        # Mark unread messages as read
+        messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+        return render(request, self.template_name, {
+            'other_user': other_user,
+            'messages': messages,
+        })
+
+    def post(self, request, user_id):
+        text = request.POST.get('text', '').strip()
+        if text:
+            ChatMessage.objects.create(sender=request.user, receiver_id=user_id, text=text)
+        # If AJAX request, return JSON instead of redirect
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'ok'})
+        return redirect('users:chat_room', user_id)
+
+
+@method_decorator(decorator=(login_required, never_cache), name='dispatch')
+class ChatMessagesAPIView(generic.View):
+    """Returns messages as JSON for AJAX polling."""
+    def get(self, request, user_id):
+        after_id = request.GET.get('after', 0)
+        other_user = User.objects.get(id=user_id)
+        messages = ChatMessage.objects.filter(
+            (Q(sender=request.user) & Q(receiver=other_user)) |
+            (Q(sender=other_user) & Q(receiver=request.user)),
+            id__gt=after_id
+        ).order_by('created_at')
+        # Mark new received messages as read
+        messages.filter(receiver=request.user, is_read=False).update(is_read=True)
+        data = [{
+            'id': msg.id,
+            'text': msg.text,
+            'is_mine': msg.sender == request.user,
+            'sender': msg.sender.username,
+            'time': f'{tz.localtime(msg.created_at).strftime("%b %d, %I:%M %p")}',
+        } for msg in messages]
+        return JsonResponse({'messages': data})

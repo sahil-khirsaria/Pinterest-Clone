@@ -1,9 +1,9 @@
-import datetime
 import os.path
 import random
 import string
 
 from django.conf import settings
+from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
@@ -34,7 +34,7 @@ def update_pin_file_name(instance, filename):
     upload_path = PIN_UPLOAD_PATH
     file_ext = filename.split('.')[-1]
     random_str = random_string()
-    now_datetime = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    now_datetime = timezone.localtime().strftime('%Y%m%d%H%M%S')
     file_name = random_str + '_pin_' + str(now_datetime) + '.' + file_ext
     return os.path.join(upload_path, file_name)
 
