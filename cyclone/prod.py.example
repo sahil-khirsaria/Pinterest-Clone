@@ -10,26 +10,24 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 # security.W008
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = True  # Set False until HTTPS is configured
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# security.W004
-SECURE_HSTS_SECONDS = 31536000  # One year in seconds
-
-# Another security settings
+# HSTS
+SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Database
 
 DATABASES = {
     'default': {
-        'ENGINE': '',
-        'NAME': '',
-        'USER': '',  # Not used with sqlite3.
-        'PASSWORD': '',  # Not used with sqlite3.
-        'HOST': '',
-        'PORT': ,
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': '',       # e.g. pinterestdb
+        'USER': '',       # e.g. pinterestuser
+        'PASSWORD': '',
+        'HOST': '',       # RDS endpoint
+        'PORT': 5432,
     },
 }
 
@@ -37,12 +35,14 @@ ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = []
 
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+# Celery — Redis installed on EC2 (local, not ElastiCache for free tier)
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # python -m celery -A cyclone worker --pool=solo -l INFO (start celery server for windows)
 # python -m celery -A cyclone worker -l INFO (start celery server for ubuntu)
 
+# Email — Gmail SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
@@ -56,5 +56,10 @@ AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
 AWS_STORAGE_BUCKET_NAME = ''
 AWS_S3_REGION_NAME = 'ap-south-1'
+AWS_DEFAULT_ACL = 'public-read'
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
+
+# Security headers
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
