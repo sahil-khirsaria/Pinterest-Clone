@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
 
   web:
-    build: .
+    image: ${IMAGE}
     restart: unless-stopped
     env_file:
       - .env
@@ -14,7 +14,7 @@ services:
       - redis
 
   celery:
-    build: .
+    image: ${IMAGE}
     restart: unless-stopped
     command: celery -A cyclone.celery_task worker --loglevel=info
     env_file:
