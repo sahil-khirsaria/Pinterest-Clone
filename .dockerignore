@@ -1,0 +1,33 @@
+ # Virtual environment — the container has its own Python installation
+PintrestEnv/
+venv/
+env/
+
+# Git history — not needed inside the running app
+.git
+.gitignore
+
+# IDE files
+.idea
+.vscode
+
+# Secret env files — NEVER bake secrets into an image!
+# We pass them at runtime via docker-compose instead
+.env
+cyclone/dev.py
+cyclone/stage.py
+
+# Media files live on S3, not in the image
+media/
+
+# CI/CD config — not needed inside the app
+.github/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Deployment notes
+deployement.txt
+deployementcreds.txt
