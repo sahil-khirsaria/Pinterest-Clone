@@ -108,8 +108,6 @@ ENV/
 env.bak/
 venv.bak/
 dev.py
-stage.py
-prod.py
 
 # Spyder project settings
 .spyderproject
